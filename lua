@@ -1,307 +1,154 @@
-print("(custom, AC:SaB) ANTICHEAT BYPASSED")
-
-local spawnDelay = 3.2
-
 local Players = game:GetService("Players")
-
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
 
-local UIS = game:GetService("UserInputService")
+local Player = Players.LocalPlayer
+local PlayerGui = Player:WaitForChild("PlayerGui")
 
-local player = Players.LocalPlayer
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ZerosLuckyBlockEditor"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = PlayerGui
 
-local rfBrainrot = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Net"):WaitForChild("RF/AdminService/SpawnBrainrot")
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 300, 0, 155)
+frame.Position = UDim2.new(0.5, 0, 0.5, 0)
+frame.AnchorPoint = Vector2.new(0.5, 0.5)
+frame.BackgroundColor3 = Color3.fromRGB(18, 35, 60)
+frame.BorderSizePixel = 0
+frame.Parent = screenGui
 
-local rfStartEvent = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Net"):WaitForChild("RF/AdminService/StartEvent")
+local frameCorner = Instance.new("UICorner")
+frameCorner.CornerRadius = UDim.new(0, 14)
+frameCorner.Parent = frame
 
-local ScreenGui = Instance.new("ScreenGui")
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundTransparency = 1
+title.Text = "Zeros Lucky Block Editor"
+title.TextColor3 = Color3.fromRGB(200, 220, 255)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 17
+title.Parent = frame
 
-ScreenGui.Name = "BrainrotSpawner"
+local luckyText = Instance.new("TextBox")
+luckyText.Size = UDim2.new(0.9, 0, 0, 32)
+luckyText.Position = UDim2.new(0.05, 0, 0.3, 0)
+luckyText.BackgroundColor3 = Color3.fromRGB(30, 55, 90)
+luckyText.TextColor3 = Color3.fromRGB(255, 255, 255)
+luckyText.Font = Enum.Font.Gotham
+luckyText.TextSize = 15
+luckyText.ClearTextOnFocus = false
+luckyText.PlaceholderText = "Enter Lucky Block"
+luckyText.Text = ""
+luckyText.Parent = frame
 
-ScreenGui.ResetOnSpawn = false
+local tbCorner = Instance.new("UICorner")
+tbCorner.CornerRadius = UDim.new(0, 10)
+tbCorner.Parent = luckyText
 
-ScreenGui.Parent = player:WaitForChild("PlayerGui")
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0.5, 0, 0, 32)
+button.Position = UDim2.new(0.25, 0, 0.58, 0)
+button.BackgroundColor3 = Color3.fromRGB(45, 95, 180)
+button.Text = "Edit"
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.Font = Enum.Font.GothamBold
+button.TextSize = 15
+button.Parent = frame
 
-local function makeMobileDraggable(obj)
+local btnCorner = Instance.new("UICorner")
+btnCorner.CornerRadius = UDim.new(0, 10)
+btnCorner.Parent = button
 
-    local dragging, dragStart, startPos
+local note = Instance.new("TextLabel")
+note.Size = UDim2.new(1, -20, 0, 22)
+note.Position = UDim2.new(0, 10, 1, -26)
+note.BackgroundTransparency = 1
+note.Text = ""
+note.Font = Enum.Font.GothamBold
+note.TextSize = 14
+note.TextTransparency = 1
+note.Parent = frame
 
-    obj.InputBegan:Connect(function(i)
+local dragging = false
+local dragStart
+local startPos
+local activeInput
 
-        if i.UserInputType == Enum.UserInputType.Touch then
-
-            dragging = true
-
-            dragStart = i.Position
-
-            startPos = obj.Position
-
-        end
-
-    end)
-
-    UIS.InputChanged:Connect(function(i)
-
-        if dragging and i.UserInputType == Enum.UserInputType.Touch then
-
-            local delta = i.Position - dragStart
-
-            obj.Position = UDim2.new(
-
-                startPos.X.Scale,
-
-                startPos.X.Offset + delta.X,
-
-                startPos.Y.Scale,
-
-                startPos.Y.Offset + delta.Y
-
-            )
-
-        end
-
-    end)
-
-    obj.InputEnded:Connect(function(i)
-
-        if i.UserInputType == Enum.UserInputType.Touch then
-
-            dragging = false
-
-        end
-
-    end)
-
+local function updateDrag(input)
+	local delta = input.Position - dragStart
+	frame.Position = UDim2.new(
+		startPos.X.Scale,
+		startPos.X.Offset + delta.X,
+		startPos.Y.Scale,
+		startPos.Y.Offset + delta.Y
+	)
 end
 
-local ToggleButton = Instance.new("ImageButton")
-
-ToggleButton.Size = UDim2.new(0,70,0,70)
-
-ToggleButton.Position = UDim2.new(1,-90,0,20)
-
-ToggleButton.BackgroundTransparency = 1
-
-ToggleButton.Image = "rbxassetid://95003172478442"
-
-ToggleButton.Parent = ScreenGui
-
-local ToggleCorner = Instance.new("UICorner")
-
-ToggleCorner.CornerRadius = UDim.new(1,0)
-
-ToggleCorner.Parent = ToggleButton
-
-makeMobileDraggable(ToggleButton)
-
-local Main = Instance.new("Frame")
-
-Main.Size = UDim2.new(0, 260, 0, 310)
-
-Main.Position = UDim2.new(0.5, -130, 0.5, -155)
-
-Main.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-
-Main.BorderSizePixel = 0
-
-Main.Visible = false
-
-Main.Parent = ScreenGui
-
-makeMobileDraggable(Main)
-
-local UICorner = Instance.new("UICorner")
-
-UICorner.CornerRadius = UDim.new(0, 12)
-
-UICorner.Parent = Main
-
-local Title = Instance.new("TextLabel")
-
-Title.Size = UDim2.new(1, 0, 0, 40)
-
-Title.BackgroundTransparency = 1
-
-Title.Text = "Zeros Brainrot Spawner"
-
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-
-Title.Font = Enum.Font.GothamBold
-
-Title.TextSize = 20
-
-Title.Parent = Main
-
-local function makeBox(placeholder, y)
-
-    local box = Instance.new("TextBox")
-
-    box.Size = UDim2.new(1, -30, 0, 35)
-
-    box.Position = UDim2.new(0, 15, 0, y)
-
-    box.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
-
-    box.TextColor3 = Color3.fromRGB(255, 255, 255)
-
-    box.PlaceholderText = placeholder
-
-    box.Text = ""
-
-    box.Font = Enum.Font.Gotham
-
-    box.ClearTextOnFocus = true
-
-    box.TextSize = 16
-
-    box.Parent = Main
-
-    Instance.new("UICorner", box).CornerRadius = UDim.new(0, 8)
-
-    return box
-
-end
-
-local BrainrotBox = makeBox("Brainrot", 50)
-
-local MutationBox = makeBox("Mutation", 95)
-
-local TraitBox = makeBox("Trait", 140)
-
-local LoopBtn = Instance.new("TextButton")
-
-LoopBtn.Size = UDim2.new(1, -30, 0, 40)
-
-LoopBtn.Position = UDim2.new(0, 15, 0, 185)
-
-LoopBtn.BackgroundColor3 = Color3.fromRGB(70, 170, 255)
-
-LoopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-
-LoopBtn.Font = Enum.Font.GothamBold
-
-LoopBtn.TextSize = 18
-
-LoopBtn.Text = "Looped: Off"
-
-LoopBtn.Parent = Main
-
-Instance.new("UICorner", LoopBtn).CornerRadius = UDim.new(0, 10)
-
-local SpawnBtn = Instance.new("TextButton")
-
-SpawnBtn.Size = UDim2.new(1, -30, 0, 40)
-
-SpawnBtn.Position = UDim2.new(0, 15, 0, 235)
-
-SpawnBtn.BackgroundColor3 = Color3.fromRGB(90, 200, 90)
-
-SpawnBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-
-SpawnBtn.Font = Enum.Font.GothamBold
-
-SpawnBtn.TextSize = 18
-
-SpawnBtn.Text = "Spawn"
-
-SpawnBtn.Parent = Main
-
-Instance.new("UICorner", SpawnBtn).CornerRadius = UDim.new(0, 10)
-
-local looped = false
-
-local function getBoxText(box)
-
-    return box.Text ~= "" and box.Text or ""
-
-end
-
-local function spawnBrainrot()
-
-    local brainrotName = getBoxText(BrainrotBox)
-
-    local mutation = getBoxText(MutationBox)
-
-    local trait = getBoxText(TraitBox)
-
-    rfBrainrot:InvokeServer(brainrotName, mutation, trait)
-
-    if brainrotName == "Meowl" then
-
-        task.wait(1.6)
-
-        rfStartEvent:InvokeServer("Meowl")
-
-    elseif brainrotName == "Strawberry Elephant" then
-
-        task.wait(2.4)
-
-        rfStartEvent:InvokeServer("Strawberry")
-
-    end
-
-end
-
-LoopBtn.MouseButton1Click:Connect(function()
-
-    looped = not looped
-
-    LoopBtn.Text = looped and "Looped: On" or "Looped: Off"
-
-    if looped then
-
-        task.spawn(function()
-
-            while looped do
-
-                spawnBrainrot()
-
-                task.wait(spawnDelay)
-
-            end
-
-        end)
-
-    end
-
+frame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1
+	or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		activeInput = input
+		dragStart = input.Position
+		startPos = frame.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+				activeInput = nil
+			end
+		end)
+	end
 end)
 
-SpawnBtn.MouseButton1Click:Connect(spawnBrainrot)
-
-ToggleButton.MouseButton1Click:Connect(function()
-
-    ToggleButton:TweenSize(
-
-        UDim2.new(0,60,0,60),
-
-        Enum.EasingDirection.Out,
-
-        Enum.EasingStyle.Quad,
-
-        0.08,
-
-        true,
-
-        function()
-
-            ToggleButton:TweenSize(
-
-                UDim2.new(0,70,0,70),
-
-                Enum.EasingDirection.Out,
-
-                Enum.EasingStyle.Quad,
-
-                0.08,
-
-                true
-
-            )
-
-        end
-
-    )
-
-    Main.Visible = not Main.Visible
-
+UserInputService.InputChanged:Connect(function(input)
+	if dragging and input == activeInput then
+		updateDrag(input)
+	end
 end)
+
+local blocks = {
+	["Secret Lucky Block"] = "La Secret Combinasion",
+	["Festive Lucky Block"] = "La Ginger Sekolah",
+	["Premium Festive Lucky Block"] = "La Ginger Sekolah",
+	["Spooky Lucky Block"] = "La Casa Boo",
+	["Taco Lucky Block"] = "Burrito Bandito",
+	["Los Taco Blocks"] = "Los Burritos",
+	["Los Lucky Blocks"] = "Los 67",
+	["Admin Lucky Block"] = "La Grande Combinasion"
+}
+
+local function showNote(text, color)
+	note.Text = text
+	note.TextColor3 = color
+	note.TextTransparency = 0
+	task.delay(3.5, function()
+		note.TextTransparency = 1
+		note.Text = ""
+	end)
+end
+
+button.Activated:Connect(function()
+	local name = luckyText.Text
+	if name == "" or not blocks[name] then
+		showNote("Not Supported", Color3.fromRGB(255, 80, 80))
+		return
+	end
+	for blockName, secondArg in pairs(blocks) do
+		local chance = "0.5"
+		if blockName == name then
+			chance = "9999999999999"
+		end
+		pcall(function()
+			ReplicatedStorage:WaitForChild("Packages")
+				:WaitForChild("Net")
+				:WaitForChild("RF/AdminService/SetLuckyBlockChance")
+				:InvokeServer(blockName, secondArg, chance)
+		end)
+	end
+	showNote("Success", Color3.fromRGB(80, 255, 120))
+end)
+
+
+
