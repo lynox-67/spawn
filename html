@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Webhook Spammer Web (para pruebas)</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #1e1e1e; color: #e0e0e0; padding: 20px; max-width: 600px; margin: auto; }
+    h1 { color: #ff5555; text-align: center; }
+    label { display: block; margin: 15px 0 5px; font-weight: bold; }
+    input, textarea { width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #444; background: #2d2d2d; color: white; }
+    button { padding: 12px 20px; background: #ff5555; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; }
+    button:hover { background: #ff3333; }
+    button:disabled { background: #555; cursor: not-allowed; }
+    #status { margin-top: 20px; padding: 12px; border-radius: 6px; background: #333; min-height: 80px; white-space: pre-wrap; }
+    .info { color: #55ff55; }
+    .error { color: #ff5555; }
+  </style>
+</head>
+<body>
+  <h1>Webhook Spammer (versión web)</h1>
+  
+  <label>URL del Webhook de Discord:</label>
+  <input type="text" id="webhook" placeholder="https://discord.com/api/webhooks/12345/abcde..." />
+
+  <label>Mensaje a spamear:</label>
+  <textarea id="message" rows="4" placeholder="Aquí va el mensaje (puedes usar embeds simples si sabes JSON)"></textarea>
+
+  <label>Cantidad de mensajes (máx 100 recomendado):</label>
+  <input type="number" id="amount" value="10" min="1" max="500" />
+
+  <label>Retraso entre mensajes (ms) — mínimo 300 para evitar bans rápidos:</label>
+  <input type="number" id="delay" value="600" min="200" />
+
+  <button id="startBtn">Iniciar Spam</button>
+  <button id="stopBtn" disabled>Detener</button>
+
+  <div id="status"></div>
+
+  <script>
+    const status = document.getElementById('status');
+    let intervalId = null;
+    let isRunning = false;
+
+    function log(msg, type = 'info') {
+      status.innerHTML += `<div class="${type}">[${new Date().toLocaleTimeString()}] ${msg}</div>`;
+      status.scrollTop = status.scrollHeight;
+    }
+
+    async function sendMessage(webhookUrl, content) {
+      try {
+        const res = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content })
+        });
+
+        if (res.ok) {
+          log('Mensaje enviado ✓', 'info');
+          return true;
+        } else {
+          const err = await res.text();
+          log(`Error ${res.status}: ${err}`, 'error');
+          if (res.status === 429) log('Rate limit! Espera más tiempo entre mensajes.', 'error');
+          return false;
+        }
+      } catch (e) {
+        log(`Fallo de conexión: ${e.message}`, 'error');
+        return false;
+      }
+    }
+
+    async function spam() {
+      const webhook = document.getElementById('webhook').value.trim();
+      const message = document.getElementById('message').value.trim();
+      const amount = parseInt(document.getElementById('amount').value) || 10;
+      const delay = parseInt(document.getElementById('delay').value) || 600;
+
+      if (!webhook.startsWith('https://discord.com/api/webhooks/')) {
+        log('Webhook inválido. Debe empezar con https://discord.com/api/webhooks/', 'error');
+        stopSpam();
+        return;
+      }
+
+      if (!message) {
+        log('Escribe un mensaje primero.', 'error');
+        stopSpam();
+        return;
+      }
+
+      log(`Iniciando spam → ${amount} mensajes, delay ${delay}ms`, 'info');
+
+      let sent = 0;
+      for (let i = 0; i < amount; i++) {
+        if (!isRunning) break;
+
+        const success = await sendMessage(webhook, message);
+        sent++;
+        if (!success && sent > 3) {
+          log('Demasiados errores seguidos → deteniendo.', 'error');
+          break;
+        }
+
+        await new Promise(r => setTimeout(r, delay));
+      }
+
+      if (isRunning) {
+        log('Spam finalizado.', 'info');
+        stopSpam();
+      }
+    }
+
+    function startSpam() {
+      if (isRunning) return;
+      isRunning = true;
+      document.getElementById('startBtn').disabled = true;
+      document.getElementById('stopBtn').disabled = false;
+      status.innerHTML = '';
+      spam();
+    }
+
+    function stopSpam() {
+      isRunning = false;
+      document.getElementById('startBtn').disabled = false;
+      document.getElementById('stopBtn').disabled = true;
+      log('Spam detenido por el usuario.', 'info');
+    }
+
+    document.getElementById('startBtn').onclick = startSpam;
+    document.getElementById('stopBtn').onclick = stopSpam;
+  </script>
+</body>
+</html>
